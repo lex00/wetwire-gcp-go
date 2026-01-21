@@ -11,6 +11,7 @@ import (
 	"github.com/lex00/wetwire-gcp-go/internal/discover"
 	"github.com/lex00/wetwire-gcp-go/internal/lint"
 	_ "github.com/lex00/wetwire-gcp-go/internal/registry" // Register Config Connector types
+	"github.com/lex00/wetwire-k8s-go/differ"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )
@@ -27,6 +28,10 @@ type (
 	ValidateOpts = coredomain.ValidateOpts
 	ListOpts     = coredomain.ListOpts
 	GraphOpts    = coredomain.GraphOpts
+	DiffOpts     = coredomain.DiffOpts
+	DiffResult   = coredomain.DiffResult
+	DiffEntry    = coredomain.DiffEntry
+	DiffSummary  = coredomain.DiffSummary
 	Result       = coredomain.Result
 	Error        = coredomain.Error
 )
@@ -45,6 +50,7 @@ type GCPDomain struct{}
 var (
 	_ coredomain.Domain       = (*GCPDomain)(nil)
 	_ coredomain.ListerDomain = (*GCPDomain)(nil)
+	_ coredomain.DifferDomain = (*GCPDomain)(nil)
 )
 
 // Name returns "gcp"
@@ -80,6 +86,11 @@ func (d *GCPDomain) Validator() coredomain.Validator {
 // Lister returns the GCP lister implementation
 func (d *GCPDomain) Lister() coredomain.Lister {
 	return &gcpLister{}
+}
+
+// Differ returns the GCP differ implementation (uses shared K8s differ)
+func (d *GCPDomain) Differ() coredomain.Differ {
+	return differ.New()
 }
 
 // CreateRootCommand creates the root command using the domain interface.

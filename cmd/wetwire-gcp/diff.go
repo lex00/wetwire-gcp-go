@@ -2,13 +2,15 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
 
-	"github.com/lex00/wetwire-gcp-go/internal/differ"
+	coredomain "github.com/lex00/wetwire-core-go/domain"
+	"github.com/lex00/wetwire-k8s-go/differ"
 )
 
 // newDiffCmd creates the "diff" subcommand for comparing manifests.
@@ -45,7 +47,10 @@ Examples:
 
 // runDiff compares two manifests and outputs differences.
 func runDiff(file1, file2, format string, ignoreOrder bool) error {
-	result, err := differ.CompareFiles(file1, file2, differ.Options{
+	d := differ.New()
+	ctx := coredomain.NewContext(context.Background(), ".")
+
+	result, err := d.Diff(ctx, file1, file2, coredomain.DiffOpts{
 		IgnoreOrder: ignoreOrder,
 	})
 	if err != nil {
@@ -55,7 +60,7 @@ func runDiff(file1, file2, format string, ignoreOrder bool) error {
 	return outputDiffResult(result, format, file1, file2)
 }
 
-func outputDiffResult(result differ.Result, format, file1, file2 string) error {
+func outputDiffResult(result *coredomain.DiffResult, format, file1, file2 string) error {
 	switch format {
 	case "json":
 		data, err := json.MarshalIndent(result, "", "  ")
@@ -72,34 +77,21 @@ func outputDiffResult(result differ.Result, format, file1, file2 string) error {
 
 		fmt.Printf("Comparing %s vs %s\n\n", file1, file2)
 
-		if len(result.Diff.Added) > 0 {
-			fmt.Println("=== Added Resources ===")
-			for _, entry := range result.Diff.Added {
+		for _, entry := range result.Entries {
+			switch entry.Action {
+			case "added":
 				fmt.Printf("  + %s (%s)\n", entry.Resource, entry.Type)
-			}
-			fmt.Println()
-		}
-
-		if len(result.Diff.Removed) > 0 {
-			fmt.Println("=== Removed Resources ===")
-			for _, entry := range result.Diff.Removed {
+			case "removed":
 				fmt.Printf("  - %s (%s)\n", entry.Resource, entry.Type)
-			}
-			fmt.Println()
-		}
-
-		if len(result.Diff.Modified) > 0 {
-			fmt.Println("=== Modified Resources ===")
-			for _, entry := range result.Diff.Modified {
+			case "modified":
 				fmt.Printf("  ~ %s (%s)\n", entry.Resource, entry.Type)
 				for _, change := range entry.Changes {
 					fmt.Printf("      %s\n", change)
 				}
 			}
-			fmt.Println()
 		}
 
-		fmt.Printf("Summary: %d added, %d removed, %d modified\n",
+		fmt.Printf("\nSummary: %d added, %d removed, %d modified\n",
 			result.Summary.Added, result.Summary.Removed, result.Summary.Modified)
 
 	default:
