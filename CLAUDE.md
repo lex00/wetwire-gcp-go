@@ -77,6 +77,29 @@ wetwire-gcp build ./gcp
 wetwire-gcp build -o manifests.yaml
 ```
 
+
+## Diff
+
+Compare Config Connector YAML semantically:
+
+```bash
+# Compare two files
+wetwire-gcp diff file1 file2
+
+# JSON output for CI/CD
+wetwire-gcp diff file1 file2 -f json
+
+# Ignore array ordering differences
+wetwire-gcp diff file1 file2 --ignore-order
+```
+
+The diff command performs semantic comparison by resource name, detecting:
+- Added resources
+- Removed resources
+- Modified resources (with property-level change details)
+
+Exit code is 1 if differences are found, enabling CI pipeline validation.
+
 ### Linting
 
 ```bash
