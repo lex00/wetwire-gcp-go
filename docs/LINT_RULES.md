@@ -6,7 +6,7 @@ This document describes lint rules for wetwire-gcp-go.
 
 The wetwire-gcp linter enforces flat, declarative patterns optimized for AI generation and human readability. Rules check for structural patterns, Config Connector best practices, and GCP-specific constraints.
 
-**Status:** Lint rules are planned but not yet implemented. The linter currently passes all inputs.
+**Status:** Implemented. The linter is located in `internal/lint/` and implements the following rules.
 
 ## Rule Naming Convention
 
@@ -28,7 +28,7 @@ All rules follow the format: `WGCxxx`
 
 ---
 
-## Planned Rules
+## Implemented Rules
 
 ### WGC001: Top-level resource declarations
 
@@ -56,42 +56,27 @@ var MyBucket = storagev1beta1.StorageBucket{
 
 ---
 
-### WGC002: Avoid deeply nested structures
+### WGC002: No pointer declarations
 
-**Description:** Extract nested configurations to separate variables.
+**Description:** Avoid pointer assignments (&Type{}) - use value types.
 
 **Severity:** Error
 
-**Why:** Flat declarations are easier for AI to generate and humans to understand.
+**Why:** Value types are simpler and match Config Connector's expected format.
 
 **Bad:**
 
 ```go
-var MyInstance = computev1beta1.ComputeInstance{
-    Spec: computev1beta1.ComputeInstanceSpec{
-        NetworkInterface: []computev1beta1.NetworkInterface{
-            {
-                NetworkRef: computev1beta1.NetworkRef{Name: "my-network"},
-                AccessConfig: []computev1beta1.AccessConfig{
-                    {NatIP: computev1beta1.NatIP{...}},
-                },
-            },
-        },
-    },
+var MyBucket = &storagev1beta1.StorageBucket{
+    ObjectMeta: metav1.ObjectMeta{Name: "my-bucket"},
 }
 ```
 
 **Good:**
 
 ```go
-var MyNetworkInterface = computev1beta1.NetworkInterface{
-    NetworkRef: computev1beta1.NetworkRef{Name: MyNetwork.Name},
-}
-
-var MyInstance = computev1beta1.ComputeInstance{
-    Spec: computev1beta1.ComputeInstanceSpec{
-        NetworkInterface: []computev1beta1.NetworkInterface{MyNetworkInterface},
-    },
+var MyBucket = storagev1beta1.StorageBucket{
+    ObjectMeta: metav1.ObjectMeta{Name: "my-bucket"},
 }
 ```
 

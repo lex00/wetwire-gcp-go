@@ -9,6 +9,7 @@ import (
 
 	coredomain "github.com/lex00/wetwire-core-go/domain"
 	"github.com/lex00/wetwire-gcp-go/internal/discover"
+	"github.com/lex00/wetwire-gcp-go/internal/lint"
 	_ "github.com/lex00/wetwire-gcp-go/internal/registry" // Register Config Connector types
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -172,8 +173,34 @@ func (l *gcpLinter) Lint(ctx *Context, path string, opts LintOpts) (*Result, err
 		return nil, fmt.Errorf("resolve path: %w", err)
 	}
 
-	// TODO: Implement GCP-specific lint rules
-	return NewResult(fmt.Sprintf("GCP lint for %s (not yet implemented)", absPath)), nil
+	lintOpts := lint.Options{
+		DisabledRules: opts.Disable,
+		Fix:           opts.Fix,
+	}
+
+	result, err := lint.LintPackage(absPath, lintOpts)
+	if err != nil {
+		return nil, fmt.Errorf("lint: %w", err)
+	}
+
+	if result.Success {
+		return NewResult("No lint issues found"), nil
+	}
+
+	// Convert lint issues to domain errors
+	var errors []Error
+	for _, issue := range result.Issues {
+		errors = append(errors, Error{
+			Message:  issue.Message,
+			Path:     issue.File,
+			Line:     issue.Line,
+			Column:   issue.Column,
+			Severity: issue.Severity.String(),
+			Code:     issue.Rule,
+		})
+	}
+
+	return NewErrorResultMultiple(fmt.Sprintf("Found %d lint issues", len(errors)), errors), nil
 }
 
 // gcpInitializer implements domain.Initializer
