@@ -17,8 +17,8 @@ github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/json-iterator/go v1.1.12 h1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=
 github.com/json-iterator/go v1.1.12/go.mod h1:e30LSqwooZae/UwlEbR2852Gd8hjQvJoHmT4TnhNGBo=
-github.com/lex00/wetwire-core-go v1.19.4-0.20260121210839-370b71c9685d h1:LkSjyCQPRGUWM2Dt7iGZH8h+vawimX1pnfkXhFS1OMg=
-github.com/lex00/wetwire-core-go v1.19.4-0.20260121210839-370b71c9685d/go.mod h1:gYfxg4rNIwr2AGiPsCF/ssFczDRI/FGeuMaDCS/vdm4=
+github.com/lex00/wetwire-core-go v1.20.0 h1:e19HnH90nssu8NJeohyurrqkh9nAGnEzuy7QCWAF//M=
+github.com/lex00/wetwire-core-go v1.20.0/go.mod h1:gYfxg4rNIwr2AGiPsCF/ssFczDRI/FGeuMaDCS/vdm4=
 github.com/lex00/wetwire-k8s-go v1.6.1-0.20260121211104-64484dfa8749 h1:gKIxcWOVjNDrTXT/eT3Xl1M6vk5Ibs7ihVD+J/EzGVo=
 github.com/lex00/wetwire-k8s-go v1.6.1-0.20260121211104-64484dfa8749/go.mod h1:oTN5XV/sS+MDV84xVohTP0bUuVWTS8rb8dLav1AcpSA=
 github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
