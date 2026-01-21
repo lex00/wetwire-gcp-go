@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/fsnotify/fsnotify v1.9.0
-	github.com/lex00/wetwire-core-go v1.19.4-0.20260121210839-370b71c9685d
+	github.com/lex00/wetwire-core-go v1.20.0
 	github.com/lex00/wetwire-k8s-go v1.6.1-0.20260121211104-64484dfa8749
 	github.com/spf13/cobra v1.10.2
 	gopkg.in/yaml.v3 v3.0.1
