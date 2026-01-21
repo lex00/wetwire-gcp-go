@@ -1,28 +1,163 @@
+// Command design provides AI-assisted infrastructure design.
 package main
 
 import (
+	"bufio"
+	"context"
 	"fmt"
+	"os"
+	"os/signal"
+	"strings"
+	"syscall"
 
+	"github.com/lex00/wetwire-core-go/agent/agents"
+	"github.com/lex00/wetwire-core-go/agent/orchestrator"
+	"github.com/lex00/wetwire-core-go/agent/results"
+	"github.com/lex00/wetwire-gcp-go/internal/kiro"
 	"github.com/spf13/cobra"
 )
 
-// newDesignCmd creates the design subcommand
+// newDesignCmd creates the "design" subcommand for AI-assisted infrastructure design.
+// It supports both Anthropic API and Kiro CLI providers for interactive code generation.
 func newDesignCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "design [description]",
-		Short: "AI-assisted GCP infrastructure design",
-		Long: `Design GCP infrastructure interactively with AI assistance.
+	var outputDir string
+	var maxLintCycles int
+	var stream bool
+	var provider string
 
-Examples:
-  wetwire-gcp design "Create a Cloud SQL instance"
-  wetwire-gcp design "Set up a GKE cluster with Config Connector"`,
-		Args: cobra.MaximumNArgs(1),
+	cmd := &cobra.Command{
+		Use:   "design [prompt]",
+		Short: "AI-assisted GCP infrastructure design",
+		Long: `Start an interactive AI-assisted session to design and generate GCP infrastructure code.
+
+The AI agent will:
+1. Ask clarifying questions about your requirements
+2. Generate Go code using wetwire-gcp patterns with Config Connector CRDs
+3. Run the linter and fix any issues
+4. Build the Config Connector manifests
+
+Providers:
+    kiro (default) - Uses Kiro CLI with wetwire-gcp-runner agent
+
+With the Kiro provider, you can omit the prompt and the agent will ask what
+you'd like to create.
+
+Example:
+    wetwire-gcp design "Create a GKE cluster with node pools"
+    wetwire-gcp design "Set up a Cloud SQL instance with private networking"
+    wetwire-gcp design --provider kiro`,
+		Args: cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// TODO: Implement AI-assisted design
-			fmt.Fprintln(cmd.OutOrStdout(), "GCP design mode (not yet implemented)")
-			return nil
+			prompt := strings.Join(args, " ")
+			return runDesign(prompt, outputDir, maxLintCycles, stream, provider)
 		},
 	}
 
+	cmd.Flags().StringVarP(&outputDir, "output", "o", ".", "Output directory for generated files")
+	cmd.Flags().IntVarP(&maxLintCycles, "max-lint-cycles", "l", 3, "Maximum lint/fix cycles")
+	cmd.Flags().BoolVarP(&stream, "stream", "s", true, "Stream AI responses")
+	cmd.Flags().StringVar(&provider, "provider", "kiro", "AI provider: 'kiro' or 'core'")
+
 	return cmd
+}
+
+// runDesign starts an AI-assisted design session with the specified provider.
+func runDesign(prompt, outputDir string, maxLintCycles int, stream bool, provider string) error {
+	switch provider {
+	case "kiro":
+		return runDesignKiro(prompt, outputDir)
+	case "core":
+		return runDesignWithCore(prompt, outputDir, maxLintCycles, stream)
+	default:
+		return fmt.Errorf("unknown provider: %s (use 'kiro' or 'core')", provider)
+	}
+}
+
+// runDesignKiro launches an interactive Kiro CLI session with the wetwire-gcp-runner agent.
+func runDesignKiro(prompt, outputDir string) error {
+	// Change to output directory if specified
+	if outputDir != "." {
+		if err := os.MkdirAll(outputDir, 0755); err != nil {
+			return fmt.Errorf("creating output directory: %w", err)
+		}
+		if err := os.Chdir(outputDir); err != nil {
+			return fmt.Errorf("changing to output directory: %w", err)
+		}
+	}
+
+	fmt.Println("Starting Kiro CLI design session...")
+	fmt.Println()
+
+	// Launch Kiro CLI chat
+	return kiro.LaunchChat("wetwire-gcp-runner", prompt)
+}
+
+// runDesignWithCore runs an interactive design session using wetwire-core-go's agent infrastructure.
+func runDesignWithCore(prompt, outputDir string, maxLintCycles int, stream bool) error {
+	if prompt == "" {
+		return fmt.Errorf("prompt is required for the core provider")
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Handle interrupt
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		<-sigCh
+		fmt.Println("\nInterrupted, cleaning up...")
+		cancel()
+	}()
+
+	// Create session for tracking
+	session := results.NewSession("human", "design")
+
+	// Create human developer (reads from stdin)
+	reader := bufio.NewReader(os.Stdin)
+	developer := orchestrator.NewHumanDeveloper(func() (string, error) {
+		return reader.ReadString('\n')
+	})
+
+	// Create stream handler if streaming enabled
+	var streamHandler agents.StreamHandler
+	if stream {
+		streamHandler = func(text string) {
+			fmt.Print(text)
+		}
+	}
+
+	// Create runner agent with GCP domain
+	runner, err := agents.NewRunnerAgent(agents.RunnerConfig{
+		Domain:        DefaultGCPDomain(),
+		WorkDir:       outputDir,
+		MaxLintCycles: maxLintCycles,
+		Session:       session,
+		Developer:     developer,
+		StreamHandler: streamHandler,
+	})
+	if err != nil {
+		return fmt.Errorf("creating runner: %w", err)
+	}
+
+	fmt.Println("Starting AI-assisted design session...")
+	fmt.Println("The AI will ask questions and generate infrastructure code.")
+	fmt.Println("Press Ctrl+C to stop.")
+	fmt.Println()
+
+	// Run the agent
+	if err := runner.Run(ctx, prompt); err != nil {
+		return fmt.Errorf("design session failed: %w", err)
+	}
+
+	// Print summary
+	fmt.Println("\n--- Session Summary ---")
+	fmt.Printf("Generated files: %d\n", len(runner.GetGeneratedFiles()))
+	for _, f := range runner.GetGeneratedFiles() {
+		fmt.Printf("  - %s\n", f)
+	}
+	fmt.Printf("Lint cycles: %d\n", runner.GetLintCycles())
+	fmt.Printf("Lint passed: %v\n", runner.LintPassed())
+
+	return nil
 }
