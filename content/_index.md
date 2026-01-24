@@ -4,6 +4,7 @@ title: "Wetwire GCP"
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/lex00/wetwire-gcp-go.svg)](https://pkg.go.dev/github.com/lex00/wetwire-gcp-go)
 [![CI](https://github.com/lex00/wetwire-gcp-go/actions/workflows/ci.yml/badge.svg)](https://github.com/lex00/wetwire-gcp-go/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/lex00/wetwire-gcp-go/graph/badge.svg)](https://codecov.io/gh/lex00/wetwire-gcp-go)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Generate Google Cloud Deployment Manager templates from Go structs with AI-assisted design.
