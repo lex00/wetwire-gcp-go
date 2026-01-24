@@ -36,3 +36,7 @@ theme = "wetwire"
     name = "Lint Rules"
     pageRef = "/lint-rules"
     weight = 30
+  [[menus.main]]
+    name = "Source"
+    url = "https://github.com/lex00/wetwire-gcp-go"
+    weight = 50
