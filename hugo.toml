@@ -1,8 +1,6 @@
 baseURL = "https://lex00.github.io/wetwire-gcp-go/"
 languageCode = "en-us"
 title = "Wetwire GCP"
-
-# Theme is added as git submodule in themes/wetwire
 theme = "wetwire"
 
 # Clean URLs
@@ -29,14 +27,22 @@ theme = "wetwire"
     pageRef = "/cli"
     weight = 10
   [[menus.main]]
-    name = "FAQ"
-    pageRef = "/faq"
+    name = "Quick Start"
+    pageRef = "/quick-start"
     weight = 20
   [[menus.main]]
-    name = "Lint Rules"
-    pageRef = "/lint-rules"
+    name = "Examples"
+    pageRef = "/examples"
     weight = 30
+  [[menus.main]]
+    name = "Scenarios"
+    pageRef = "/scenarios"
+    weight = 40
+  [[menus.main]]
+    name = "FAQ"
+    pageRef = "/faq"
+    weight = 50
   [[menus.main]]
     name = "Source"
     url = "https://github.com/lex00/wetwire-gcp-go"
-    weight = 50
+    weight = 60
