@@ -2,11 +2,6 @@
 title: "CLI"
 ---
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./wetwire-dark.svg">
-  <img src="./wetwire-light.svg" width="100" height="67">
-</picture>
-
 The `wetwire-gcp` command provides tools for generating and validating Config Connector manifests from Go code.
 
 ## Quick Reference
@@ -253,4 +248,3 @@ Add to your Claude Code MCP settings:
 ## Resources
 
 - [Config Connector Documentation](https://cloud.google.com/config-connector/docs/overview)
-- [Wetwire Specification](https://github.com/lex00/wetwire/blob/main/docs/WETWIRE_SPEC.md)

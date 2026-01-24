@@ -2,11 +2,6 @@
 title: "Lint Rules"
 ---
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./wetwire-dark.svg">
-  <img src="./wetwire-light.svg" width="100" height="67">
-</picture>
-
 This document describes lint rules for wetwire-gcp-go.
 
 ## Overview
@@ -233,23 +228,7 @@ Member: "allAuthenticatedUsers"
 
 ---
 
-## Inherited from wetwire-k8s-go
-
-Since Config Connector resources are Kubernetes CRDs, the following WK8 rules also apply:
-
-| Rule | Description |
-|------|-------------|
-| WK8001 | Top-level resource declarations |
-| WK8002 | Avoid deeply nested structures |
-| WK8003 | No duplicate resource names |
-| WK8004 | Circular dependency detection |
-
-See [wetwire-k8s-go LINT_RULES.md](https://github.com/lex00/wetwire-k8s-go/blob/main/docs/LINT_RULES.md) for details.
-
----
-
 ## Resources
 
 - [Config Connector Resource Reference](https://cloud.google.com/config-connector/docs/reference/overview)
 - [GCP Naming Conventions](https://cloud.google.com/compute/docs/naming-resources)
-- [Wetwire Specification](https://github.com/lex00/wetwire/blob/main/docs/WETWIRE_SPEC.md)
